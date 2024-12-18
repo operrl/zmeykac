@@ -1,6 +1,7 @@
 #include <iostream>
 #include <Windows.h>
 #include <cstdlib>
+#include <conio.h>
 
 using std::cout;
 
@@ -46,77 +47,91 @@ int snake_y[MAX_LEN_SNAKE] = { 0 };  //координата части змеи 
 int snake_len = 1; //текущая длина змеи 
 
 
-int main() { //время от начала пуска программы
 
-		srand(static_cast<unsigned int>(time(0)));
-		snake_x[0] = WIDTH / 2;
-		snake_y[0] = HEIGHT / 2; //спавн головы змейки в центре поля
-		int time = clock();
+void tracing() {
+	if (snake_x[0] == food_x && snake_y[0] == food_y) {
+		++snake_len;
+		food_x = 1 + (rand() % (WIDTH - 3));
+		food_y = 1 + (rand() % (HEIGHT - 2));
+	}
 
-		while (isRunning) {
-			if ((clock() - time) / 150 >= 1) {
-				time = clock();
-				for (int i = snake_len - 2; i >= 0; i--) { //значение i(счетчика) это предпоследняя часть змейки, это делается для того, что бы все двигалось равномерно, i-- для того что бы перейти к след части змейки и передвинуть ее
-					snake_x[i + 1] = snake_x[i];
-					snake_y[i + 1] = snake_y[i];
-				}
-				if (snake_dir == UP) {
-					--snake_y[0];
-				}
-				if (snake_dir == DOWN) {
-					++snake_y[0];
-				}
-				if (snake_dir == RIGHT) {
-					++snake_x[0];
-				}
-				if (snake_dir == LEFT) {
-					--snake_x[0];
-				}
+	for (int i = snake_len - 1; i >= 0; i--) { //значение i(счетчика) это предпоследняя часть змейки, это делается для того, что бы все двигалось равномерно, i-- для того что бы перейти к след части змейки и передвинуть ее
+		snake_x[i + 1] = snake_x[i];
+		snake_y[i + 1] = snake_y[i];
+	}
+	gotoxy(0, 0);
+	map[food_y * WIDTH + food_x] = food;
+	for (int i = 0; i < snake_len; i++) {
+		map[snake_y[i] * WIDTH + snake_x[i]] = snake; //прорисовка змейки 
+	}
+	cout << "for leave press 'x'\n";
+	cout << map;
+	for (int i = 0; i < snake_len; i++) {
+		map[snake_y[i] * WIDTH + snake_x[i]] = ' '; //очищение буфера от предыдущей змейки
+	}
 
-			if (GetKeyState('W') & 0x8000) {
-				if (snake_dir != DOWN) {
-					snake_dir = UP;
-				}
-			}
-			if (GetKeyState('A') & 0x8000) {
-				if (snake_dir != RIGHT) {
-					snake_dir = LEFT;
-				}
-			}
-			if (GetKeyState('S') & 0x8000) {
-				if (snake_dir != UP) {
-					snake_dir = DOWN;
-				}
-			}
-			if (GetKeyState('D') & 0x8000) {
-				if (snake_dir != LEFT) {
-					snake_dir = RIGHT;
-				}
-			}
+	cout << "Current lenght: " << snake_len << std::endl;
 
-			gotoxy(0, 0);
-			map[food_y * WIDTH + food_x] = food;
-			for (int i = 0; i < snake_len; i++) {
-				map[snake_y[i] * WIDTH + snake_x[i]] = snake; //прорисовка змейки 
-			}
-			cout << map;
-			for (int i = 0; i < snake_len; i++) {
-				map[snake_y[i] * WIDTH + snake_x[i]] = ' '; //очищение буфера от предыдущей змейки
-			}
+	if (snake_x[0] == 0 || snake_y[0] == 0 || snake_x[0] == WIDTH - 2 || snake_y[0] == HEIGHT - 1) {
+		cout << "Game Over!";
+		isRunning = false;
+	}
+}
+void moving() {
+	if (snake_dir == UP) {
+		--snake_y[0];
+	}
+	if (snake_dir == DOWN) {
+		++snake_y[0];
+	}
+	if (snake_dir == RIGHT) {
+		++snake_x[0];
+	}
+	if (snake_dir == LEFT) {
+		--snake_x[0];
+	}
 
-			cout << "Current lenght: " << snake_len << std::endl;
-			if (snake_x[0] == food_x && snake_y[0] == food_y) {
-				food_x = 1 + (rand() % (WIDTH - 3));
-				food_y = 1 + (rand() % (HEIGHT - 2));
-				snake_len++;
-			}
-
-			}
-
-			if (snake_x[0] == 0 || snake_y[0] == 0 || snake_x[0] == WIDTH - 2 || snake_y[0] == HEIGHT - 1) {
-				cout << "Game Over!";
-				isRunning = false;
-			}
+	if (_kbhit())
+	{
+		switch (_getch())
+		{
+		case 'a':
+			snake_dir = LEFT;
+			break;
+		case 'd':
+			snake_dir = RIGHT;
+			break;
+		case 'w':
+			snake_dir = UP;
+			break;
+		case 's':
+			snake_dir = DOWN;
+			break;
+		case 'x':
+			cout << "U end game, goobye!";
+			isRunning = false;
 		}
 	}
+}
+void game_logic() {
+
+	if (snake_x[0] == 0 || snake_y[0] == 0 || snake_x[0] == WIDTH - 2 || snake_y[0] == HEIGHT - 1) {
+		cout << "Game Over!";
+		isRunning = false;
+	}
+}
+
+
+	int main() { //время от начала пуска программы
+
+	srand(static_cast<unsigned int>(time(0)));
+	snake_x[0] = WIDTH / 2;
+	snake_y[0] = HEIGHT / 2; //спавн головы змейки в центре поля
+
+	while (isRunning) {
+		tracing();
+		Sleep(500);
+		moving();
+	}
+}
 
