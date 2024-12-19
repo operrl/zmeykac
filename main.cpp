@@ -24,7 +24,7 @@ char map[] = //карта игры
 "################\n";
 const int WIDTH = 17; //ширина карты (x)
 const int HEIGHT = 10; // высота карты (y)
-const int MAX_LEN_SNAKE = (WIDTH - 3) * (HEIGHT - 2); //максимальная длина змейки
+const int MAX_LEN_SNAKE = WIDTH * WIDTH - 1; //максимальная длина змейки (WIDTH - 3) * (HEIGHT - 2)
 
 const int UP = 0;
 const int DOWN = 1;
@@ -81,8 +81,12 @@ void tracing() {
 	for (int i = 0; i < snake_len; i++) {
 		map[snake_y[i] * WIDTH + snake_x[i]] = ' '; //очищение буфера от предыдущей змейки
 	}
-
-	cout << "Current lenght: " << snake_len << std::endl;
+	if (snake_len != 1) {
+		cout << "Current lenght: " << snake_len - 1 << std::endl;
+	}
+	else {
+		cout << "for play use WASD" << std::endl;
+	} 
 
 	if (snake_x[0] == 0 || snake_y[0] == 0 || snake_x[0] == WIDTH - 2 || snake_y[0] == HEIGHT - 1) {
 		cout << "Game Over!";
