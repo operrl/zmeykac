@@ -46,13 +46,25 @@ int snake_y[MAX_LEN_SNAKE] = { 0 };  //координата части змеи 
 
 int snake_len = 1; //текущая длина змеи 
 
+bool test() {
+	for (int i = 0; i < snake_len; ++i)
+		if (snake_x[i] == food_x && snake_y[i] == food_y)
+			return true;
+	return false;
+}
 
+void resp_food() {
+	do {
+		food_x = 1 + (rand() % (WIDTH - 3));
+		food_y = 1 + (rand() % (HEIGHT - 2));
+	} while (test());
+
+}
 
 void tracing() {
 	if (snake_x[0] == food_x && snake_y[0] == food_y) {
 		++snake_len;
-		food_x = 1 + (rand() % (WIDTH - 3));
-		food_y = 1 + (rand() % (HEIGHT - 2));
+		resp_food();
 	}
 
 	for (int i = snake_len - 1; i >= 0; i--) { //значение i(счетчика) это предпоследняя часть змейки, это делается для того, что бы все двигалось равномерно, i-- для того что бы перейти к след части змейки и передвинуть ее
@@ -119,19 +131,27 @@ void game_logic() {
 		cout << "Game Over!";
 		isRunning = false;
 	}
+	for (int i = 1; i < snake_len; i++) {
+		if (snake_x[0] == snake_x[i] && snake_y[0] == snake_y[i]) {
+			isRunning = false;
+			i = snake_len;
+		}
+	}
 }
 
 
-	int main() { //время от начала пуска программы
+int main() { 
 
 	srand(static_cast<unsigned int>(time(0)));
 	snake_x[0] = WIDTH / 2;
 	snake_y[0] = HEIGHT / 2; //спавн головы змейки в центре поля
+	
+	resp_food();
 
 	while (isRunning) {
 		tracing();
 		Sleep(500);
 		moving();
+		game_logic();
 	}
 }
-
