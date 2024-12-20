@@ -24,7 +24,7 @@ char map[] = //карта игры
 "################\n";
 const int WIDTH = 17; //ширина карты (x)
 const int HEIGHT = 10; // высота карты (y)
-const int MAX_LEN_SNAKE = WIDTH * WIDTH - 1; //максимальная длина змейки (WIDTH - 3) * (HEIGHT - 2)
+const int MAX_LEN_SNAKE = WIDTH * HEIGHT - 1; //максимальная длина змейки (WIDTH - 3) * (HEIGHT - 2)
 
 const int UP = 0;
 const int DOWN = 1;
