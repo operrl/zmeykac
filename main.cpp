@@ -112,16 +112,24 @@ void moving() {
 		switch (_getch())
 		{
 		case 'a':
-			snake_dir = LEFT;
+			if (snake_dir != RIGHT){
+				snake_dir = LEFT;
+			}
 			break;
 		case 'd':
-			snake_dir = RIGHT;
+			if (snake_dir != LEFT){
+				snake_dir = RIGHT;
+			}
 			break;
 		case 'w':
-			snake_dir = UP;
+			if (snake_dir != DOWN){
+				snake_dir = UP;
+			}
 			break;
 		case 's':
-			snake_dir = DOWN;
+			if (snake_dir != UP){
+				snake_dir = DOWN;
+			}
 			break;
 		case 'x':
 			cout << "U end game, goobye!";
