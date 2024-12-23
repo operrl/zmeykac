@@ -141,6 +141,10 @@ void game_logic() {
 			i = snake_len;
 		}
 	}
+	if (snake_len == MAX_LEN_SNAKE){
+		cout << "u win game, ggwp";
+		isRunning = false;
+	}
 }
 
 
