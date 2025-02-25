@@ -1,173 +1,189 @@
 #include <iostream>
 #include <Windows.h>
-#include <cstdlib>
-#include <conio.h>
+#include <vector>
+#include <string>
+#include <chrono>
 
-using std::cout;
 
-void gotoxy(int x, int y) { //функция для перемещения курсора в центр карты
-	COORD pos = { static_cast<SHORT>(x), static_cast<SHORT>(y) }; //получение координат курсора 
+void ShowConsoleCursor(bool showFlag) {
+	HANDLE out = GetStdHandle(showFlag);
+
+	CONSOLE_CURSOR_INFO cursorInfo;
+
+	GetConsoleCursorInfo(out, &cursorInfo);
+	cursorInfo.bVisible = showFlag;
+	SetConsoleCursorInfo(out, &cursorInfo);
+
+}
+
+
+void gotoxy(int x, int y) { 
+	COORD pos = { static_cast<SHORT>(x), static_cast<SHORT>(y) }; 
 	HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE); //?
-	SetConsoleCursorPosition(output, pos); //устанавливает курсор на заданное значение 
+	SetConsoleCursorPosition(output, pos); 
 }
+bool isPlaying = true;
 
-char map[] = //карта игры
-"################\n"
-"#              #\n"
-"#              #\n"
-"#              #\n"
-"#              #\n"
-"#              #\n"
-"#              #\n"
-"#              #\n"
-"#              #\n"
-"################\n";
-const int WIDTH = 17; //ширина карты (x)
-const int HEIGHT = 10; // высота карты (y)
-const int MAX_LEN_SNAKE = WIDTH * HEIGHT - 1; //максимальная длина змейки (WIDTH - 3) * (HEIGHT - 2)
+const int F_WIDTH = 10;
+const int F_HEIGHT = 20;
 
-const int UP = 0;
-const int DOWN = 1;
-const int LEFT = 2;
-const int RIGHT = 3; //плоскости движения змейки
-
-int snake_dir = 5; //направление куда движется змея
-
-bool isRunning = true; //проверка на запуск игры, если игра завершена = false
-
-char snake = 'O'; //скин змейки
-char food = '*'; //скин еды
-
-int food_x = 5;
-int food_y = 5;
-
-int snake_x[MAX_LEN_SNAKE] = { 0 };  //координата части змеи по x
-int snake_y[MAX_LEN_SNAKE] = { 0 };  //координата части змеи по y
-
-int snake_len = 1; //текущая длина змеи 
-
-bool test() {
-	for (int i = 0; i < snake_len; ++i)
-		if (snake_x[i] == food_x && snake_y[i] == food_y)
-			return true;
-	return false;
-}
-
-void resp_food() {
-	do {
-		food_x = 1 + (rand() % (WIDTH - 3));
-		food_y = 1 + (rand() % (HEIGHT - 2));
-	} while (test());
-
-}
-
-void tracing() {
-	if (snake_x[0] == food_x && snake_y[0] == food_y) {
-		++snake_len;
-		resp_food();
+class Detail {
+	int pos_x = F_WIDTH / 2;
+	int pos_y = 0;
+	std::string sprite =
+		"0000"
+		"0000"
+		"0000"
+		"0000";
+public:
+	Detail(const std::string& sprite_) {
+		sprite = sprite_;
 	}
 
-	for (int i = snake_len - 1; i >= 0; i--) { //значение i(счетчика) это предпоследняя часть змейки, это делается для того, что бы все двигалось равномерно, i-- для того что бы перейти к след части змейки и передвинуть ее
-		snake_x[i + 1] = snake_x[i];
-		snake_y[i + 1] = snake_y[i];
+	const std::string& get_sprite() const {
+		return sprite;
 	}
-	gotoxy(0, 0);
-	map[food_y * WIDTH + food_x] = food;
-	for (int i = 0; i < snake_len; i++) {
-		map[snake_y[i] * WIDTH + snake_x[i]] = snake; //прорисовка змейки 
+	int x() const {
+		return pos_x;
 	}
-	cout << "for leave press 'x'\n";
-	cout << map;
-	for (int i = 0; i < snake_len; i++) {
-		map[snake_y[i] * WIDTH + snake_x[i]] = ' '; //очищение буфера от предыдущей змейки
-	}
-	if (snake_len != 1) {
-		cout << "Current lenght: " << snake_len - 1 << std::endl;
-	}
-	else {
-		cout << "for play use WASD" << std::endl;
-	} 
-
-	if (snake_x[0] == 0 || snake_y[0] == 0 || snake_x[0] == WIDTH - 2 || snake_y[0] == HEIGHT - 1) {
-		cout << "Game Over!";
-		isRunning = false;
-	}
-}
-void moving() {
-	if (snake_dir == UP) {
-		--snake_y[0];
-	}
-	if (snake_dir == DOWN) {
-		++snake_y[0];
-	}
-	if (snake_dir == RIGHT) {
-		++snake_x[0];
-	}
-	if (snake_dir == LEFT) {
-		--snake_x[0];
+	int y() {
+		return pos_y;
 	}
 
-	if (_kbhit())
-	{
-		switch (_getch())
-		{
-		case 'a':
-			if (snake_dir != RIGHT){
-				snake_dir = LEFT;
+
+	void draw() {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				gotoxy(1 + pos_x + j,1 + pos_y + i);
+				char sym = sprite[i * 4 + j];
+				if (sym == '$') {
+					std::cout << sym;
+				}
 			}
-			break;
-		case 'd':
-			if (snake_dir != LEFT){
-				snake_dir = RIGHT;
-			}
-			break;
-		case 'w':
-			if (snake_dir != DOWN){
-				snake_dir = UP;
-			}
-			break;
-		case 's':
-			if (snake_dir != UP){
-				snake_dir = DOWN;
-			}
-			break;
-		case 'x':
-			cout << "U end game, goobye!";
-			isRunning = false;
 		}
 	}
-}
-void game_logic() {
-
-	if (snake_x[0] == 0 || snake_y[0] == 0 || snake_x[0] == WIDTH - 2 || snake_y[0] == HEIGHT - 1) {
-		cout << "Game Over!";
-		isRunning = false;
-	}
-	for (int i = 1; i < snake_len; i++) {
-		if (snake_x[0] == snake_x[i] && snake_y[0] == snake_y[i]) {
-			isRunning = false;
-			i = snake_len;
+	void clear() {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				gotoxy(1 + pos_x + j, 1 + pos_y + i);
+				char sym = sprite[i * 4 + j];
+				if (sym == '$') {
+					std::cout << ' ';
+				}
+			}
 		}
 	}
-	if (snake_len == MAX_LEN_SNAKE){
-		cout << "u win game, ggwp";
-		isRunning = false;
+	void move_down() {
+		pos_y += 1;
 	}
-}
+	void rotate() {
+		std::string new_sprite(
+			"0000"
+			"0000"
+			"0000"
+			"0000");
 
+		int min_x = 100;
+		int min_y = 100;
+		for (int i = 0; i < sprite.size(); i++) {
+			if (sprite[i] == '$') {
+				double x = (i % 4);
+				double y = (i / 4);
+				min_x = (y * -1) < min_x ? (y * -1) : min_x;
+				min_y = x < min_y ? x : min_y;
+			}
+		}
+		for (int i = 0; i < sprite.size(); i++) {
+			if (sprite[i] == '$') {
+				double x = (1 % 4);
+				double y = (i / 4);
 
-int main() { 
+				int new_x = -y - min_x;
+				int new_y = x - min_y;
+				new_sprite[new_y * 4 + new_x] = sprite[i];
+			}
+		}
+		sprite = new_sprite;
+	}
+};
 
-	srand(static_cast<unsigned int>(time(0)));
-	snake_x[0] = WIDTH / 2;
-	snake_y[0] = HEIGHT / 2; //спавн головы змейки в центре поля
-	
-	resp_food();
+std::vector < Detail > details = {
+	Detail(
+		"$$00"
+		"$$00"
+		"0000"
+		"0000"),
+	Detail(
+		"$000"
+		"$000"
+		"$000"
+		"$000"),
+	Detail(
+		"000$"
+		"000$"
+		"000$"
+		"$$$$"),
+	Detail(
+		"$000"
+		"$000"
+		"$000"
+		"$$$$")
+};
+class Map {
+	std::string map = std::string(F_HEIGHT * F_WIDTH, ' ');
+public:
+	void draw_frame() {
+		for (int h = 0; h < F_HEIGHT + 2; h++) {
+			for (int w = 0; w < F_WIDTH + 2; w++) {
+				gotoxy(w, h);
+				if (h == 0 || w == 0 || h == F_HEIGHT + 1 || w == F_WIDTH + 1) {
+					std::cout << 'x';
+				}
+			}
+		}
+	}
+	bool collision(const Detail&) {
+		const std::string sprite = detail.get_sprite();
+		const int det_x = detail.x();
+		const int det_y = detail.y();
 
-	while (isRunning) {
-		tracing();
-		Sleep(500);
-		moving();
-		game_logic();
+		for (int i = 0; i < 4; i++) {
+			int bot_pos = 0;
+			for (int j = 0; j < 4; j++) {
+				if (sprite[j * 4 + i] == '$') {
+					bot_pos = det_y + j + 1;
+				}
+			}
+			if (bot_pos * F_WIDTH + i + det_x >= map.size() || map[bot_pos & F_WIDTH + i + det_x] != ' ') {
+				for (int k = 0; j < 4; j++) {
+					if (sprite[j * 4 + k] == '$') {
+						map[(det_y + j) * F_WIDTH + k + det_x] = '$';
+					}
+				}
+			}
+		}
+	}
+};
+
+int main() {
+	ShowConsoleCursor(false);
+	Map map;
+	map.draw_frame();
+	std::chrono::time_point<std::chrono::system_clock> startTime = std::chrono::system_clock::now(); //обращение к пространству имен std, установка точки времени через системное время, название переменной старттайм? 
+	std::chrono::time_point<std::chrono::system_clock> endTime = std::chrono::system_clock::now(); // приравнивается это все к сисетмному времен
+	while (isPlaying) {
+		Detail cur_det = details[0];
+		bool stand = false;
+		while (!stand) {
+			endTime = std::chrono::system_clock::now();
+			std::chrono::duration<double> diff = endTime - startTime;
+			stand = map.collision(cur_det);
+			if (diff.count() > 0.2 && !stand) {
+				cur_det.clear();
+				cur_det.move_down();
+				cur_det.draw();
+				startTime = std::chrono::system_clock::now();
+			}
+		}
 	}
 }
